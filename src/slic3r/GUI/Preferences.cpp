@@ -1519,7 +1519,7 @@ wxBoxSizer* PreferencesDialog::create_item_link_association( wxString url_prefix
     // TRN %s is a URL scheme, for example "prusaslicer".
     wxString title = wxString::Format(_L("Associate %s://"), url_prefix);
     // TRN The first %s is a URL scheme, for example "prusaslicer"; the second is a website name.
-    wxString tooltip = wxString::Format(_L("Associate %s:// with OrcaSlicer so that Orca can open models from %s"), url_prefix, website_name);
+    wxString tooltip = wxString::Format(_L("Associate %s:// with AZSlicer so that AZSlicer can open models from %s"), url_prefix, website_name);
 
     std::wstring registered_bin; // not used, just here to provide a ref to check fn
     bool reg_to_current_instance = wxGetApp().check_url_association(url_prefix.ToStdWstring(), registered_bin);
@@ -1769,12 +1769,12 @@ void PreferencesDialog::create_items()
     g_sizer->Add(item_darkmode);
 #endif
 
-    auto item_single_instance  = create_item_checkbox(_L("Allow only one OrcaSlicer instance"),
+    auto item_single_instance  = create_item_checkbox(_L("Allow only one AZSlicer instance"),
     #if __APPLE__
             _L("On OSX there is always only one instance of app running by default. However it is allowed to run multiple instances "
                 "of same app from the command line. In such case this settings will allow only one instance."),
     #else
-            _L("If this is enabled, when starting OrcaSlicer and another instance of the same OrcaSlicer is already running, that instance will be reactivated instead."),
+            _L("If this is enabled, when starting AZSlicer and another instance of the same AZSlicer is already running, that instance will be reactivated instead."),
     #endif
             "single_instance");
     g_sizer->Add(item_single_instance);
@@ -1789,9 +1789,9 @@ void PreferencesDialog::create_items()
     // TRN "GPU" is the graphics card; the option only matters on computers that have two of them.
     auto item_discrete_gpu = create_item_checkbox(_L("Render on the discrete GPU"),
         // TRN DRI_PRIME is an environment variable name and must stay as it is.
-        _L("On a computer with two GPUs, run OrcaSlicer on the discrete GPU instead of the one that drives the display. "
+        _L("On a computer with two GPUs, run AZSlicer on the discrete GPU instead of the one that drives the display. "
            "Some Wayland systems cannot show frames rendered on the other GPU, or fail to open the window at all. "
-           "Turn this off if the 3D view stays empty; if OrcaSlicer no longer starts, start it once with DRI_PRIME=0 "
+           "Turn this off if the 3D view stays empty; if AZSlicer no longer starts, start it once with DRI_PRIME=0 "
            "in the environment to get back here."),
         "prefer_discrete_gpu", _L("(Requires restart)"));
     g_sizer->Add(item_discrete_gpu);
@@ -1946,7 +1946,7 @@ void PreferencesDialog::create_items()
     // managed by Windows Settings; the runtime registry toggles below cannot work.
     // Show a minimal page that sends the user to Windows' Default Apps settings instead.
     if (is_running_in_msix()) {
-        g_sizer->Add(create_item_title(_L("Associate files to OrcaSlicer")), 1, wxEXPAND);
+        g_sizer->Add(create_item_title(_L("Associate files to AZSlicer")), 1, wxEXPAND);
 
         auto item_open_default_apps = create_item_button(
             _L("File associations for the Microsoft Store version are managed by Windows Settings."),
@@ -1955,22 +1955,22 @@ void PreferencesDialog::create_items()
         g_sizer->Add(item_open_default_apps);
     } else {
         //// FILES > Extensions
-        g_sizer->Add(create_item_title(_L("Associate files to OrcaSlicer")), 1, wxEXPAND);
+        g_sizer->Add(create_item_title(_L("Associate files to AZSlicer")), 1, wxEXPAND);
 
-        auto item_associate_3mf    = create_item_checkbox(_L("Associate 3MF files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open 3MF files.") , "associate_3mf");
+        auto item_associate_3mf    = create_item_checkbox(_L("Associate 3MF files to AZSlicer"), _L("If enabled, this sets AZSlicer as the default application to open 3MF files.") , "associate_3mf");
         g_sizer->Add(item_associate_3mf);
 
-        auto item_associate_drc    = create_item_checkbox(_L("Associate DRC files to OrcaSlicer"), _L("If enabled, sets OrcaSlicer as default application to open DRC files."), "associate_drc");
+        auto item_associate_drc    = create_item_checkbox(_L("Associate DRC files to AZSlicer"), _L("If enabled, sets AZSlicer as default application to open DRC files."), "associate_drc");
         g_sizer->Add(item_associate_drc);
 
-        auto item_associate_stl    = create_item_checkbox(_L("Associate STL files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open STL files.") , "associate_stl");
+        auto item_associate_stl    = create_item_checkbox(_L("Associate STL files to AZSlicer"), _L("If enabled, this sets AZSlicer as the default application to open STL files.") , "associate_stl");
         g_sizer->Add(item_associate_stl);
 
-        auto item_associate_step   = create_item_checkbox(_L("Associate STEP files to OrcaSlicer"), _L("If enabled, this sets OrcaSlicer as the default application to open STEP files."), "associate_step");
+        auto item_associate_step   = create_item_checkbox(_L("Associate STEP files to AZSlicer"), _L("If enabled, this sets AZSlicer as the default application to open STEP files."), "associate_step");
         g_sizer->Add(item_associate_step);
 
         //// FILES > WebLinks
-        g_sizer->Add(create_item_title(_L("Associate web links to OrcaSlicer")), 1, wxEXPAND);
+        g_sizer->Add(create_item_title(_L("Associate web links to AZSlicer")), 1, wxEXPAND);
 
         auto associate_url_prusa   = create_item_link_association(L"prusaslicer", "Printables.com");
         g_sizer->Add(associate_url_prusa);
@@ -2007,7 +2007,7 @@ void PreferencesDialog::create_items()
 
     auto item_auto_reslice = create_item_auto_reslice(
         _L("Auto slice after changes"),
-        _L("If enabled, OrcaSlicer will re-slice automatically whenever slicing-related settings change."),
+        _L("If enabled, AZSlicer will re-slice automatically whenever slicing-related settings change."),
         _L("Delay in seconds before auto slicing starts, allowing multiple edits to be grouped. Use 0 to slice immediately."));
     g_sizer->Add(item_auto_reslice);
 
@@ -2018,7 +2018,7 @@ void PreferencesDialog::create_items()
     auto item_mix_print_high_low_temperature = create_item_checkbox(_L("Remove mixed temperature restriction"), _L("With this option enabled, you can print materials with a large temperature difference together."), "enable_high_low_temp_mixed_printing");
     g_sizer->Add(item_mix_print_high_low_temperature);
 
-    auto item_remember_print_action = create_item_checkbox(_L("Remember last print action"), _L("If enabled, OrcaSlicer will remember the last selected option in the print button's dropdown (e.g. Print, Export plate sliced file, Export G-code file) and use it as the default on next startup."), "remember_print_action");
+    auto item_remember_print_action = create_item_checkbox(_L("Remember last print action"), _L("If enabled, AZSlicer will remember the last selected option in the print button's dropdown (e.g. Print, Export plate sliced file, Export G-code file) and use it as the default on next startup."), "remember_print_action");
     g_sizer->Add(item_remember_print_action);
 
     //// BEHAVIOUR > Preview
@@ -2100,7 +2100,7 @@ void PreferencesDialog::create_items()
     //// BEHAVIOUR > Preset
     g_sizer->Add(create_item_title(_L("Preset")), 1, wxEXPAND);
 
-    auto item_remember_printer = create_item_checkbox(_L("Remember printer configuration"), _L("If enabled, Orca will remember and switch filament/process configuration for each printer automatically."), "remember_printer_config");
+    auto item_remember_printer = create_item_checkbox(_L("Remember printer configuration"), _L("If enabled, AZSlicer will remember and switch filament/process configuration for each printer automatically."), "remember_printer_config");
     g_sizer->Add(item_remember_printer);
 
     auto item_filament_preset_grouping = create_item_combobox(_L("Group user filament presets"), _L("Group user filament presets based on selection"),
@@ -2543,7 +2543,7 @@ void PreferencesDialog::create_items()
 
     auto item_plugin_printer_agents = create_item_checkbox(
         _L("Use printer agents instead of print hosts"), _L(
-            "Route print jobs for non-Bambu printers through printer plug-in agents instead of the classic print-host upload flow.\nWhen disabled, OrcaSlicer uses the legacy print-host behavior."),
+            "Route print jobs for non-Bambu printers through printer plug-in agents instead of the classic print-host upload flow.\nWhen disabled, AZSlicer uses the legacy print-host behavior."),
         "use_printer_agents");
     g_sizer->Add(item_plugin_printer_agents);
 

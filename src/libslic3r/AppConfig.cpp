@@ -59,7 +59,8 @@ using namespace nlohmann;
 
 namespace Slic3r {
 
-static const std::string VERSION_CHECK_URL = "https://check-version.orcaslicer.com/latest";
+// AZSlicer: no upstream OrcaSlicer update check (it would offer the OrcaSlicer installer).
+static const std::string VERSION_CHECK_URL = "";
 static const std::string PROFILE_UPDATE_URL = "https://check-version.orcaslicer.com/profile";
 
 constexpr const char* CONFIG_ORCA_UPDATER_URL = "orca_updater_url";

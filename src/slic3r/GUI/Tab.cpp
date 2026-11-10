@@ -1702,7 +1702,7 @@ void Tab::apply_preset_config_values(const std::vector<std::pair<std::string, st
     if (m_config == nullptr)
         throw std::runtime_error("The preset configuration is not available");
     if (wxGetApp().plater() == nullptr)
-        throw std::runtime_error("OrcaSlicer main window is not available");
+        throw std::runtime_error("AZSlicer main window is not available");
 
     if (values.empty())
         return;

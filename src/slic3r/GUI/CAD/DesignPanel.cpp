@@ -7538,7 +7538,7 @@ void DesignPanel::load_recipe(const std::string& blob)
         // Carry the kernel's reason. deserialize_recipe distinguishes three cases that matter
         // very differently to the person reading this — saved by a NEWER build, saved by an
         // OLDER one, or genuinely unreadable — and replacing all three with one sentence left
-        // the user unable to tell "update OrcaSlicer" from "your file is damaged". Same
+        // the user unable to tell "update AZSlicer" from "your file is damaged". Same
         // error-loss class as the 31 McpControl sites (1de72de9ed): the message exists, it was
         // simply not passed on.
         set_status(StatusKind::Error, m_doc.error.empty()

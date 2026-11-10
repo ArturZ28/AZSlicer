@@ -1061,7 +1061,7 @@ void TroubleshootDialog::RebuildSystemProfiles()
     
     MessageDialog msg(this,
         _L("Restart Required") + "\n" +
-        _L("Please make sure any instances of OrcaSlicer are not running") + "\n" +
+        _L("Please make sure any instances of AZSlicer are not running") + "\n" +
         _L("Do you want to continue?")
         , wxString(SLIC3R_APP_FULL_NAME), wxICON_QUESTION | wxOK | wxCANCEL
     );

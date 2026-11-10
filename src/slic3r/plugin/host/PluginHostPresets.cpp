@@ -161,11 +161,11 @@ GUI::GUI_App& require_gui_app()
 {
     GUI::GUI_App& app = GUI::wxGetApp();
     if (app.is_closing())
-        throw std::runtime_error("OrcaSlicer is closing");
+        throw std::runtime_error("AZSlicer is closing");
     if (app.preset_bundle == nullptr)
         throw std::runtime_error("Preset bundle is not available");
     if (app.plater() == nullptr)
-        throw std::runtime_error("OrcaSlicer main window is not available");
+        throw std::runtime_error("AZSlicer main window is not available");
     return app;
 }
 
@@ -596,13 +596,13 @@ void reload_local_bundle(const std::string& bundle_id)
     PluginHostUi::run_on_ui_thread([&] {
         GUI::GUI_App& app = GUI::wxGetApp();
         if (app.is_closing())
-            throw std::runtime_error("OrcaSlicer is closing");
+            throw std::runtime_error("AZSlicer is closing");
         if (app.preset_bundle == nullptr)
             throw std::runtime_error("Preset bundle is not available");
         if (app.app_config == nullptr)
             throw std::runtime_error("Application configuration is not available");
         if (app.mainframe == nullptr)
-            throw std::runtime_error("OrcaSlicer main window is not available");
+            throw std::runtime_error("AZSlicer main window is not available");
 
         reloaded = app.preset_bundle->reload_local_bundle(app.app_config->get("preset_folder"), bundle_id, &error);
         if (!reloaded)
@@ -626,7 +626,7 @@ std::vector<std::string> list_bundle_ids()
     PluginHostUi::run_on_ui_thread([&] {
         GUI::GUI_App& app = GUI::wxGetApp();
         if (app.is_closing())
-            throw std::runtime_error("OrcaSlicer is closing");
+            throw std::runtime_error("AZSlicer is closing");
         if (app.preset_bundle == nullptr)
             throw std::runtime_error("Preset bundle is not available");
         if (app.app_config == nullptr)

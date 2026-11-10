@@ -260,7 +260,7 @@ auto run_on_ui_blocking(Fn&& fn) -> std::invoke_result_t<Fn&>
 {
     using R = std::invoke_result_t<Fn&>;
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
 
     if (wxIsMainThread()) {
         py::gil_scoped_release nogil;
@@ -268,7 +268,7 @@ auto run_on_ui_blocking(Fn&& fn) -> std::invoke_result_t<Fn&>
     }
 
     if (app_closing())
-        throw std::runtime_error("OrcaSlicer is closing");
+        throw std::runtime_error("AZSlicer is closing");
 
     // Shared with the queued task, which can outlive an abandoned wait. The task only touches fn
     // after claiming the call, and a claimed call is always waited for, so fn is still alive then.
@@ -299,7 +299,7 @@ auto run_on_ui_blocking(Fn&& fn) -> std::invoke_result_t<Fn&>
     while (fut.wait_for(std::chrono::milliseconds(50)) != std::future_status::ready) {
         int expected = UiCallPending;
         if (app_closing() && call->state.compare_exchange_strong(expected, UiCallAbandoned))
-            throw std::runtime_error("OrcaSlicer is closing");
+            throw std::runtime_error("AZSlicer is closing");
     }
     return fut.get();
 }
@@ -385,7 +385,7 @@ py::object ui_create_window(const std::string& html, const std::string& title, i
     const bool modal = (style & WINDOW_MODAL) != 0;
 
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
 
     // The whole wxWindow/webview creation is deferred to a clean main-loop iteration.
     // The WebKit backends deliver script messages synchronously from inside the native
@@ -499,7 +499,7 @@ py::object ui_create_dock_panel(const std::string& html, const std::string& titl
     const int         h            = height > 0 ? height : 480;
 
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
 
     // Deferred and pre-bound for the same reasons as create_window().
     const int new_id = UiRegistry::instance().reserve_id();
@@ -693,7 +693,7 @@ void PluginHostUi::RegisterBindings(pybind11::module_& host)
         "marshaled UI call from there can deadlock the application. Once the application is closing, a "
         "call from a background thread raises RuntimeError instead of waiting for the UI thread.");
 
-    ui.def("message", &ui_message, py::arg("text"), py::arg("title") = "OrcaSlicer", py::arg("buttons") = "ok",
+    ui.def("message", &ui_message, py::arg("text"), py::arg("title") = "AZSlicer", py::arg("buttons") = "ok",
            py::arg("icon") = "info",
            "Show a native modal message box; returns the clicked button id "
            "(\"ok\"/\"cancel\"/\"yes\"/\"no\"). buttons: \"ok\"|\"ok_cancel\"|\"yes_no\"|\"yes_no_cancel\"; "
@@ -720,7 +720,7 @@ void PluginHostUi::RegisterBindings(pybind11::module_& host)
             "is_open", [](const UiWindowHandle& h) { return UiRegistry::instance().is_open(h.id); },
             "Return True while the window is open.");
 
-    ui.def("create_window", &ui_create_window, py::arg("html"), py::arg("title") = "OrcaSlicer", py::arg("width") = 820,
+    ui.def("create_window", &ui_create_window, py::arg("html"), py::arg("title") = "AZSlicer", py::arg("width") = 820,
            py::arg("height") = 600, py::arg("on_message") = py::none(), py::arg("on_close") = py::none(),
            py::arg("style") = WINDOW_MODELESS, py::arg("on_submit") = py::none(),
            "Open a persistent HTML window or modal dialog and return a UiWindow. style is WINDOW_MODELESS "
@@ -742,7 +742,7 @@ void PluginHostUi::RegisterBindings(pybind11::module_& host)
             "is_open", [](const UiDockPanelHandle& h) { return UiRegistry::instance().is_open(h.id); },
             "Return True until the panel is closed; a hidden panel is still open.");
 
-    ui.def("create_dock_panel", &ui_create_dock_panel, py::arg("html"), py::arg("title") = "OrcaSlicer",
+    ui.def("create_dock_panel", &ui_create_dock_panel, py::arg("html"), py::arg("title") = "AZSlicer",
            py::arg("width") = 320, py::arg("height") = 480, py::arg("on_message") = py::none(),
            py::arg("on_close") = py::none(), py::arg("dock") = "right",
            "Open an HTML panel docked beside the 3D view and return a UiDockPanel. dock is \"left\", \"right\", "

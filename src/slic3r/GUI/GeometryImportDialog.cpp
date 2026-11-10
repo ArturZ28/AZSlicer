@@ -295,13 +295,13 @@ bool show_geometry_import_options(wxWindow* parent, const std::string& format, G
     if (format != "3mf") {
         load_mode = add_radio_group(dialog, {_L("Load as separate objects"), _L("Load as an assembly"), _L("Load as a single object (can be split later)")},
                                     options.separate_objects ? 0 : options.load_as_assembly ? 1 : 2, wxVERTICAL);
-        load_mode->SetRadioTooltip(0, _L("Each object in the file is loaded on its own, as OrcaSlicer always loaded AMF files."));
+        load_mode->SetRadioTooltip(0, _L("Each object in the file is loaded on its own, as AZSlicer always loaded AMF files."));
         load_mode->SetRadioTooltip(1, _L("The bodies of each group in the file become parts of one object, in their relative positions."));
         load_mode->SetRadioTooltip(2, _L("The original bodies and names are kept inside the object. Use Split to parts to show them as separate parts."));
         sizer->Add(load_mode, 0, wxLEFT | wxRIGHT | wxTOP, dialog.FromDIP(12));
     }
     const auto keep = add_checkbox(dialog, *sizer, _L("Keep original names"), options.keep_names);
-    keep.SetToolTip(_L("Use the body names stored in the file, when there are any. When disabled, the usual OrcaSlicer names are used; existing project names are kept."));
+    keep.SetToolTip(_L("Use the body names stored in the file, when there are any. When disabled, the usual AZSlicer names are used; existing project names are kept."));
     const auto sort = add_checkbox(dialog, *sizer, _L("Sort parts by name"), options.sort_names);
     sort.SetToolTip(_L("Sort the parts inside each imported assembly in the object list. This does not change the order used for slicing. Available when Keep original names is on."));
     link_sort_to_keep(keep, sort);
@@ -361,7 +361,7 @@ bool prepare_geometry_import_names(wxWindow* parent, const std::vector<Model*>& 
         ImportDialog dialog(parent, wxID_ANY, _L("Unsupported characters in names"), wxDefaultPosition, wxDefaultSize,
                          wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
         auto* sizer = new wxBoxSizer(wxVERTICAL);
-        add_tip(dialog, *sizer, _L("Some original names contain characters that OrcaSlicer cannot use. Choose how to change them before importing."), 520);
+        add_tip(dialog, *sizer, _L("Some original names contain characters that AZSlicer cannot use. Choose how to change them before importing."), 520);
         // Item 0 removes the characters, item 1 replaces them with the text right after it.
         auto* rule = add_radio_group(dialog, {_L("Remove unsupported characters"), _L("Replace with:")}, policy.remove ? 0 : 1, wxHORIZONTAL);
         rule->SetRadioTooltip(1, _L("Each unsupported character is replaced with this text. It may be longer than one character."));

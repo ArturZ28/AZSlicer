@@ -40,7 +40,7 @@ namespace {
 GUI::Plater* current_plater()
 {
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
 
     GUI::Plater* plater = GUI::wxGetApp().plater();
     if (plater == nullptr)
@@ -52,7 +52,7 @@ GUI::Plater* current_plater()
 PresetBundle* current_preset_bundle()
 {
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
 
     PresetBundle* preset_bundle = GUI::wxGetApp().preset_bundle;
     if (preset_bundle == nullptr)
@@ -64,7 +64,7 @@ PresetBundle* current_preset_bundle()
 GUI::GUI_App& current_app()
 {
     if (wxTheApp == nullptr)
-        throw std::runtime_error("OrcaSlicer application is not initialized");
+        throw std::runtime_error("AZSlicer application is not initialized");
     return GUI::wxGetApp();
 }
 

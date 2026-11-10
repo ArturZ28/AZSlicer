@@ -1,0 +1,66 @@
+name: AZSlicer Windows
+
+# Builds the AZSlicer Windows x64 installer and portable zip.
+# - Every push to main: the files are attached to the run (Actions tab > run > Artifacts).
+# - Pushing a tag such as v2.6.0-az1: the files are also published as a GitHub Release.
+# - "Run workflow" in the Actions tab starts a build by hand.
+# The first build compiles all dependencies (about 2-3 hours); later builds reuse the cache.
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+    paths-ignore: [ '**.md', 'docs/**' ]
+  workflow_dispatch:
+
+concurrency:
+  group: azslicer-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build_windows:
+    name: Build Windows x64
+    uses: ./.github/workflows/build_check_cache.yml
+    with:
+      os: windows-latest
+      arch: x64
+      compiler: clang
+    secrets: inherit
+
+  release:
+    name: Publish release
+    needs: build_windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: AZSlicer_Windows_*
+          path: dist
+
+      - name: Zip portable build
+        run: |
+          cd dist
+          for d in AZSlicer_Windows_*_portable; do
+            [ -d "$d" ] && (cd "$d" && zip -qr "../$d.zip" .)
+          done
+          ls -la
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cat > notes.md <<EOF
+          AZSlicer para Windows (x64).
+
+          AZSlicer é uma edição do OrcaSlicer personalizada pela AZ3D Tecnologia,
+          distribuída sob a licença GNU AGPL-3.0. O código-fonte completo desta versão
+          está neste repositório, na tag ${TAG}.
+          EOF
+          shopt -s globstar nullglob
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "AZSlicer $TAG" --notes-file notes.md \
+            dist/**/AZSlicer*.exe dist/AZSlicer_Windows_*_portable.zip
