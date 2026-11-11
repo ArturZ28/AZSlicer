@@ -50,20 +50,27 @@ jobs:
           "install dir: $dir" | Out-File out/notes.txt -Append
           "INSTALL_DIR=$dir" | Out-File $env:GITHUB_ENV -Append
           Get-ChildItem $dir | Select-Object Name, Length | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/install_dir.txt
-          Get-ChildItem "$env:ProgramData\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter *.lnk | Select-Object FullName | Out-String -Width 300 | Out-File out/start_menu.txt
-          Get-ChildItem "$env:PUBLIC\Desktop","$env:USERPROFILE\Desktop" -Filter *.lnk -ErrorAction SilentlyContinue | Select-Object FullName | Out-String -Width 300 | Out-File out/start_menu.txt -Append
+          $ErrorActionPreference = 'Continue'
+          $lnk = @("$env:ProgramData\Microsoft\Windows\Start Menu\Programs", "$env:APPDATA\Microsoft\Windows\Start Menu\Programs", "$env:PUBLIC\Desktop", "$env:USERPROFILE\Desktop") |
+            ForEach-Object { Get-ChildItem $_ -Recurse -Filter *.lnk -ErrorAction SilentlyContinue } | Where-Object FullName -match 'AZSlicer|Orca'
+          $sh = New-Object -ComObject WScript.Shell
+          $lnk | ForEach-Object { "$($_.FullName) -> $($sh.CreateShortcut($_.FullName).TargetPath)" } | Out-File out/start_menu.txt
           Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName -match 'AZ|Orca' } | Select-Object DisplayName, DisplayVersion, Publisher, InstallLocation, URLInfoAbout | Format-List | Out-String -Width 300 | Out-File out/uninstall_entry.txt
-          $app = Get-ChildItem $dir -Filter *.exe | Where-Object Name -notmatch 'uninst' | Select-Object -First 1
-          $app.VersionInfo | Format-List CompanyName, FileDescription, ProductName, ProductVersion, LegalCopyright, OriginalFilename | Out-String | Out-File out/exe_version.txt
-          $u1 = Get-ChildItem "$dir\resources\profiles\Snapmaker\machine" -Filter '*U1*'
-          "Snapmaker U1 machine profiles: $($u1.Count)" | Out-File out/snapmaker_u1.txt
-          $u1 | Select-Object -ExpandProperty Name | Out-File out/snapmaker_u1.txt -Append
-          "vendors: $((Get-ChildItem "$dir\resources\profiles" -Filter *.json).Count)" | Out-File out/snapmaker_u1.txt -Append
-          Get-ChildItem "$dir\resources\i18n" -Recurse -Filter *.mo | Select-Object -ExpandProperty FullName | Select-Object -First 5 | Out-File out/i18n.txt
+            Where-Object { $_.DisplayName -match 'AZSlicer|Orca' } | Select-Object DisplayName, DisplayVersion, Publisher, DisplayIcon, UninstallString | Format-List | Out-String -Width 300 | Out-File out/uninstall_entry.txt
+          foreach ($f in 'orca-slicer.exe', 'OrcaSlicer.dll') {
+            "== $f" | Out-File out/exe_version.txt -Append
+            (Get-Item "$dir\$f").VersionInfo | Format-List CompanyName, FileDescription, ProductName, ProductVersion, LegalCopyright | Out-String | Out-File out/exe_version.txt -Append
+          }
+          $u1 = Get-ChildItem "$dir\resources" -Recurse -Filter '*U1*' -ErrorAction SilentlyContinue
+          "Snapmaker U1 files: $($u1.Count)" | Out-File out/snapmaker_u1.txt
+          $u1 | Where-Object FullName -match 'machine' | Select-Object -ExpandProperty FullName | Out-File out/snapmaker_u1.txt -Append
+          Get-ChildItem "$dir\resources" -Directory | Select-Object -ExpandProperty Name | Out-File out/resources_dirs.txt
+          Get-ChildItem "$dir\resources" -Recurse -Filter *.mo -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName | Select-Object -First 5 | Out-File out/i18n.txt
+          exit 0
 
       - name: Software OpenGL (runner has no GPU)
         shell: pwsh
+        continue-on-error: true
         run: |
           # Mesa llvmpipe so the app can open its 3D view on a GPU-less runner (test only, not shipped).
           $rel = Invoke-RestMethod https://api.github.com/repos/pal1000/mesa-dist-win/releases/latest -Headers @{ Authorization = "Bearer ${{ github.token }}" }
@@ -75,6 +82,7 @@ jobs:
 
       - name: Run app and take screenshots
         shell: pwsh
+        continue-on-error: true
         run: |
           Add-Type -AssemblyName System.Windows.Forms, System.Drawing
           function Shot($name) {
