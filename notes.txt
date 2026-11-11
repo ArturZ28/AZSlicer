@@ -1,0 +1,6 @@
+build run: 42968119243
+installer: AZSlicer_Windows_Installer_V2.6.0-dev_x64.exe
+installer exit code: 0
+install dir: C:\Program Files\AZSlicer
+mesa: 26.2.6
+process alive after 120s: True

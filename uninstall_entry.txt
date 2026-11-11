@@ -1,0 +1,8 @@
+
+DisplayName     : AZSlicer
+DisplayVersion  : 2.6.0
+Publisher       : AZ3D Tecnologia
+DisplayIcon     : C:\Program Files\AZSlicer\orca-slicer.exe
+UninstallString : "C:\Program Files\AZSlicer\Uninstall.exe"
+
+

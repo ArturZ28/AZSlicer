@@ -1,0 +1,18 @@
+== orca-slicer.exe
+
+CompanyName     : 
+FileDescription : 
+ProductName     : 
+ProductVersion  : 
+LegalCopyright  : 
+
+
+== OrcaSlicer.dll
+
+CompanyName     : 
+FileDescription : 
+ProductName     : 
+ProductVersion  : 
+LegalCopyright  : 
+
+

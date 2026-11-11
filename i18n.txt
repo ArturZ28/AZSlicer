@@ -1,0 +1,5 @@
+C:\Program Files\AZSlicer\resources\i18n\ca\AZSlicer.mo
+C:\Program Files\AZSlicer\resources\i18n\cs\AZSlicer.mo
+C:\Program Files\AZSlicer\resources\i18n\de\AZSlicer.mo
+C:\Program Files\AZSlicer\resources\i18n\en\AZSlicer.mo
+C:\Program Files\AZSlicer\resources\i18n\es\AZSlicer.mo

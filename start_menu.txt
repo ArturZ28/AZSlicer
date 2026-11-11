@@ -1,0 +1,2 @@
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\AZSlicer\AZSlicer.lnk -> C:\Program Files\AZSlicer\orca-slicer.exe
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\AZSlicer\Uninstall.lnk -> C:\Program Files\AZSlicer\Uninstall.exe

@@ -1,0 +1,55 @@
+
+Name                     Length
+----                     ------
+include                  
+lib                      
+python                   
+resources                
+avcodec-61.dll           4820480
+avformat-61.dll          693248
+avutil-59.dll            770560
+concrt140.dll            374200
+libgmp-10.dll            543027
+libmpfr-4.dll            436011
+LICENSE.txt              35181
+msvcp140_1.dll           35768
+msvcp140_2.dll           274872
+msvcp140_atomic_wait.dll 57792
+msvcp140_codecvt_ids.dll 31160
+msvcp140.dll             643512
+orca-slicer.exe          101376
+OrcaSlicer.dll           155883520
+swresample-5.dll         108544
+swscale-8.dll            551936
+TKBO.dll                 3980800
+TKBool.dll               7839232
+TKBRep.dll               3177984
+TKCAF.dll                769536
+TKCDF.dll                397312
+TKDE.dll                 212992
+TKDESTEP.dll             8919552
+TKernel.dll              1911808
+TKFillet.dll             4375552
+TKG2d.dll                497152
+TKG3d.dll                1713664
+TKGeomAlgo.dll           6918144
+TKGeomBase.dll           6197760
+TKHLR.dll                1585152
+TKLCAF.dll               993792
+TKMath.dll               1778688
+TKMesh.dll               957952
+TKOffset.dll             5272064
+TKPrim.dll               498688
+TKService.dll            1529856
+TKShHealing.dll          5475840
+TKTopAlgo.dll            4810240
+TKV3d.dll                4156928
+TKVCAF.dll               315904
+TKXCAF.dll               1313792
+TKXSBase.dll             2331136
+Uninstall.exe            215217
+vcruntime140_1.dll       50112
+vcruntime140.dll         178616
+WebView2Loader.dll       159296
+
+

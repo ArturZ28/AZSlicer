@@ -1,0 +1,6 @@
+
+FullName                                                                          Length
+--------                                                                          ------
+D:\a\AZSlicer\AZSlicer\installer\AZSlicer_Windows_Installer_V2.6.0-dev_x64.exe 163411268
+
+

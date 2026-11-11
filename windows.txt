@@ -1,0 +1,7 @@
+
+ProcessName     MainWindowTitle
+-----------     ---------------
+orca-slicer     Untitled - AZSlicer
+WindowsTerminal C:\ProgramData\GitHub\HostedComputeAgent\hosted-compute-agent
+
+
