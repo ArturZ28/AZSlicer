@@ -1,0 +1,116 @@
+name: AZSlicer install test
+
+# Installs a built AZSlicer on a clean Windows runner, starts it, takes screenshots
+# and checks the installed files. Results are committed to the "test-results" branch.
+
+on:
+  push:
+    branches: [ ci-test ]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Run id of the 'AZSlicer Windows' build to test"
+        required: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    env:
+      BUILD_RUN_ID: ${{ inputs.run_id || '42768467605' }}
+    steps:
+      - name: Download installer
+        uses: actions/download-artifact@v8
+        with:
+          name: AZSlicer_Windows_V2.6.0-dev_x64
+          run-id: ${{ env.BUILD_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: installer
+
+      - name: Prepare
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          try { Set-DisplayResolution -Width 1920 -Height 1080 -Force -ErrorAction Stop } catch { "resolution: $_" | Out-File out/notes.txt -Append }
+          Get-ChildItem -Recurse installer | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/installer_files.txt
+
+      - name: Silent install
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse installer -Filter *.exe | Select-Object -First 1
+          "installer: $($exe.Name)" | Out-File out/notes.txt -Append
+          $p = Start-Process $exe.FullName -ArgumentList '/S' -PassThru -Wait
+          "installer exit code: $($p.ExitCode)" | Out-File out/notes.txt -Append
+          $roots = @("$env:ProgramFiles\AZSlicer", "${env:ProgramFiles(x86)}\AZSlicer")
+          $dir = $roots | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $dir) { $dir = (Get-ChildItem $env:ProgramFiles -Directory | Where-Object Name -like '*AZ*' | Select-Object -First 1).FullName }
+          "install dir: $dir" | Out-File out/notes.txt -Append
+          "INSTALL_DIR=$dir" | Out-File $env:GITHUB_ENV -Append
+          Get-ChildItem $dir | Select-Object Name, Length | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/install_dir.txt
+          Get-ChildItem "$env:ProgramData\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter *.lnk | Select-Object FullName | Out-String -Width 300 | Out-File out/start_menu.txt
+          Get-ChildItem "$env:PUBLIC\Desktop","$env:USERPROFILE\Desktop" -Filter *.lnk -ErrorAction SilentlyContinue | Select-Object FullName | Out-String -Width 300 | Out-File out/start_menu.txt -Append
+          Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -match 'AZ|Orca' } | Select-Object DisplayName, DisplayVersion, Publisher, InstallLocation, URLInfoAbout | Format-List | Out-String -Width 300 | Out-File out/uninstall_entry.txt
+          $app = Get-ChildItem $dir -Filter *.exe | Where-Object Name -notmatch 'uninst' | Select-Object -First 1
+          $app.VersionInfo | Format-List CompanyName, FileDescription, ProductName, ProductVersion, LegalCopyright, OriginalFilename | Out-String | Out-File out/exe_version.txt
+          $u1 = Get-ChildItem "$dir\resources\profiles\Snapmaker\machine" -Filter '*U1*'
+          "Snapmaker U1 machine profiles: $($u1.Count)" | Out-File out/snapmaker_u1.txt
+          $u1 | Select-Object -ExpandProperty Name | Out-File out/snapmaker_u1.txt -Append
+          "vendors: $((Get-ChildItem "$dir\resources\profiles" -Filter *.json).Count)" | Out-File out/snapmaker_u1.txt -Append
+          Get-ChildItem "$dir\resources\i18n" -Recurse -Filter *.mo | Select-Object -ExpandProperty FullName | Select-Object -First 5 | Out-File out/i18n.txt
+
+      - name: Software OpenGL (runner has no GPU)
+        shell: pwsh
+        run: |
+          # Mesa llvmpipe so the app can open its 3D view on a GPU-less runner (test only, not shipped).
+          $rel = Invoke-RestMethod https://api.github.com/repos/pal1000/mesa-dist-win/releases/latest -Headers @{ Authorization = "Bearer ${{ github.token }}" }
+          $asset = $rel.assets | Where-Object name -match 'release-msvc\.7z$' | Select-Object -First 1
+          Invoke-WebRequest $asset.browser_download_url -OutFile mesa.7z
+          7z x mesa.7z -omesa -y | Out-Null
+          Copy-Item mesa\x64\opengl32.dll, mesa\x64\libgallium_wgl.dll, mesa\x64\libglapi.dll "$env:INSTALL_DIR" -ErrorAction SilentlyContinue
+          "mesa: $($rel.tag_name)" | Out-File out/notes.txt -Append
+
+      - name: Run app and take screenshots
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          function Shot($name) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp)
+            $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $bmp.Save("out/$name.png", [System.Drawing.Imaging.ImageFormat]::Png)
+            $g.Dispose(); $bmp.Dispose()
+          }
+          $env:GALLIUM_DRIVER = 'llvmpipe'
+          $app = Get-ChildItem $env:INSTALL_DIR -Filter *.exe | Where-Object Name -notmatch 'uninst|gcodeviewer' | Select-Object -First 1
+          $p = Start-Process $app.FullName -PassThru
+          foreach ($t in 3, 8, 15, 30, 60, 90, 120) {
+            Start-Sleep -Seconds ($t - ($(if ($prev) { $prev } else { 0 })))
+            $prev = $t
+            Shot ("shot_{0:D3}s" -f $t)
+          }
+          "process alive after 120s: $(-not $p.HasExited)" | Out-File out/notes.txt -Append
+          Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object ProcessName, MainWindowTitle | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/windows.txt
+          if (Test-Path "$env:APPDATA\AZSlicer") { Get-ChildItem "$env:APPDATA\AZSlicer" | Select-Object Name | Out-String | Out-File out/appdata.txt }
+          else { "no %APPDATA%\AZSlicer" | Out-File out/appdata.txt }
+          Get-ChildItem $env:APPDATA -Directory | Where-Object Name -match 'Orca|AZ' | Select-Object Name | Out-String | Out-File out/appdata.txt -Append
+          $log = Get-ChildItem "$env:APPDATA\AZSlicer\log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
+          if ($log) { Get-Content $log.FullName -Tail 80 | Out-File out/app_log_tail.txt }
+          Stop-Process $p -Force -ErrorAction SilentlyContinue
+
+      - name: Publish results to test-results branch
+        if: always()
+        shell: pwsh
+        run: |
+          git config --global user.name "AZSlicer CI"
+          git config --global user.email "actions@users.noreply.github.com"
+          git init results; Copy-Item out\* results\ -Recurse
+          cd results
+          git checkout -b test-results
+          git add -A
+          git commit -m "Install test of build run $env:BUILD_RUN_ID"
+          git push --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" test-results

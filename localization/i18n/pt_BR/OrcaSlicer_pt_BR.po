@@ -37143,5 +37143,6 @@ msgstr ""
 #~ msgid "import SVG failed: could not parse imported svg data."
 #~ msgstr "falha ao importar o SVG: não foi possível analisar os dados do SVG importado."
 
+# AI Translated
 msgid "AZSlicer is an edition of OrcaSlicer customized by AZ3D Tecnologia. Like OrcaSlicer, it is free software licensed under the GNU Affero General Public License, version 3."
 msgstr "O AZSlicer é uma edição do OrcaSlicer personalizada pela AZ3D Tecnologia. Assim como o OrcaSlicer, é software livre licenciado sob a GNU Affero General Public License, versão 3."
