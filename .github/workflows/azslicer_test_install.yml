@@ -19,9 +19,19 @@ permissions:
 jobs:
   test:
     runs-on: windows-latest
-    env:
-      BUILD_RUN_ID: ${{ inputs.run_id || '42768467605' }}
     steps:
+      - name: Find build to test
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $id = '${{ inputs.run_id }}'
+          if (-not $id) {
+            $id = gh api "repos/${{ github.repository }}/actions/workflows/azslicer_windows.yml/runs?status=success&per_page=1" --jq '.workflow_runs[0].id'
+          }
+          "BUILD_RUN_ID=$id" | Out-File $env:GITHUB_ENV -Append
+          "build run: $id" | Out-File $env:RUNNER_TEMP\build.txt
+
       - name: Download installer
         uses: actions/download-artifact@v8
         with:
@@ -34,6 +44,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force out | Out-Null
+          Get-Content $env:RUNNER_TEMP\build.txt | Out-File out/notes.txt
           try { Set-DisplayResolution -Width 1920 -Height 1080 -Force -ErrorAction Stop } catch { "resolution: $_" | Out-File out/notes.txt -Append }
           Get-ChildItem -Recurse installer | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/installer_files.txt
 
@@ -87,7 +98,7 @@ jobs:
       - name: Run app and take screenshots
         shell: pwsh
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 6
         run: |
           Add-Type -AssemblyName System.Windows.Forms, System.Drawing
           function Shot($name) {
@@ -123,7 +134,8 @@ jobs:
           Get-ChildItem $env:APPDATA -Directory | Where-Object Name -match 'Orca|AZ' | Select-Object Name | Out-String | Out-File out/appdata.txt -Append
           $log = Get-ChildItem "$env:APPDATA\AZSlicer\log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
           if ($log) { Get-Content $log.FullName -Tail 80 | Out-File out/app_log_tail.txt }
-          taskkill /F /T /IM orca-slicer.exe | Out-Null
+          Get-Process orca-slicer, msedgewebview2 -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          exit 0
 
       - name: Publish results to test-results branch
         if: always()
