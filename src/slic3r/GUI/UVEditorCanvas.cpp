@@ -1898,7 +1898,7 @@ private:
         wxAutoBufferedPaintDC dc(this);
         const PaneColors c    = PaneColors::current();
         const wxRect     r    = GetClientRect();
-        const wxColour   teal(0x00, 0x96, 0x88);
+        const wxColour   teal(0x0B, 0x6B, 0xD6);
         const bool       enabled = usable();
 
         wxColour fill = c.bg, border = c.frame, text = c.ink;
