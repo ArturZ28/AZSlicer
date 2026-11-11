@@ -61,8 +61,12 @@ jobs:
             "== $f" | Out-File out/exe_version.txt -Append
             (Get-Item "$dir\$f").VersionInfo | Format-List CompanyName, FileDescription, ProductName, ProductVersion, LegalCopyright | Out-String | Out-File out/exe_version.txt -Append
           }
-          $u1 = Get-ChildItem "$dir\resources" -Recurse -Filter '*U1*' -ErrorAction SilentlyContinue
-          "Snapmaker U1 files: $($u1.Count)" | Out-File out/snapmaker_u1.txt
+          $snap = Get-ChildItem -LiteralPath "$dir\resources\profiles\Snapmaker" -Recurse -File -ErrorAction SilentlyContinue
+          "Snapmaker files total: $($snap.Count)" | Out-File out/snapmaker_u1.txt
+          Get-ChildItem -LiteralPath "$dir\resources\profiles\Snapmaker" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name | Out-File out/snapmaker_u1.txt -Append
+          "json under profiles: $((Get-ChildItem -LiteralPath "$dir\resources\profiles" -Recurse -Filter *.json -ErrorAction SilentlyContinue).Count)" | Out-File out/snapmaker_u1.txt -Append
+          $u1 = $snap | Where-Object Name -like '*U1*'
+          "Snapmaker U1 files: $($u1.Count)" | Out-File out/snapmaker_u1.txt -Append
           $u1 | Where-Object FullName -match 'machine' | Select-Object -ExpandProperty FullName | Out-File out/snapmaker_u1.txt -Append
           Get-ChildItem "$dir\resources" -Directory | Select-Object -ExpandProperty Name | Out-File out/resources_dirs.txt
           Get-ChildItem "$dir\resources" -Recurse -Filter *.mo -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName | Select-Object -First 5 | Out-File out/i18n.txt
@@ -83,6 +87,7 @@ jobs:
       - name: Run app and take screenshots
         shell: pwsh
         continue-on-error: true
+        timeout-minutes: 8
         run: |
           Add-Type -AssemblyName System.Windows.Forms, System.Drawing
           function Shot($name) {
@@ -102,13 +107,23 @@ jobs:
             Shot ("shot_{0:D3}s" -f $t)
           }
           "process alive after 120s: $(-not $p.HasExited)" | Out-File out/notes.txt -Append
+          Add-Type @'
+          using System; using System.Runtime.InteropServices;
+          public static class M { [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+            [DllImport("user32.dll")] public static extern void mouse_event(int f, int x, int y, int d, int e);
+            public static void Click(int x, int y) { SetCursorPos(x, y); mouse_event(2,0,0,0,0); mouse_event(4,0,0,0,0); } }
+          '@
+          [M]::Click(959, 663); Start-Sleep 12; Shot 'wizard_after_get_started'
+          $sys = "$env:APPDATA\AZSlicer\system"
+          "system dir json: $((Get-ChildItem $sys -Recurse -Filter *.json -ErrorAction SilentlyContinue).Count)" | Out-File out/snapmaker_u1.txt -Append
+          Get-ChildItem $sys -Recurse -Filter '*U1*' -ErrorAction SilentlyContinue | Select-Object -First 10 -ExpandProperty FullName | Out-File out/snapmaker_u1.txt -Append
           Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object ProcessName, MainWindowTitle | Format-Table -AutoSize | Out-String -Width 300 | Out-File out/windows.txt
           if (Test-Path "$env:APPDATA\AZSlicer") { Get-ChildItem "$env:APPDATA\AZSlicer" | Select-Object Name | Out-String | Out-File out/appdata.txt }
           else { "no %APPDATA%\AZSlicer" | Out-File out/appdata.txt }
           Get-ChildItem $env:APPDATA -Directory | Where-Object Name -match 'Orca|AZ' | Select-Object Name | Out-String | Out-File out/appdata.txt -Append
           $log = Get-ChildItem "$env:APPDATA\AZSlicer\log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime | Select-Object -Last 1
           if ($log) { Get-Content $log.FullName -Tail 80 | Out-File out/app_log_tail.txt }
-          Stop-Process $p -Force -ErrorAction SilentlyContinue
+          taskkill /F /T /IM orca-slicer.exe | Out-Null
 
       - name: Publish results to test-results branch
         if: always()
